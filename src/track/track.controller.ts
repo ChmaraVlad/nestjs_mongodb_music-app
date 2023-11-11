@@ -1,18 +1,44 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UploadedFiles,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ObjectId } from 'mongoose';
+import { Express } from 'express';
 
 import { TrackService } from './track.service';
 
 import { CreateTrackDto } from './dto/CreateTrackDto';
 import { CreateCommentDto } from './dto/CreateCommentDto';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
 @Controller('/tracks')
 export class TrackController {
   constructor(private trackService: TrackService) {}
 
   @Post()
-  async createTrack(@Body() dto: CreateTrackDto) {
-    return this.trackService.createTrack(dto);
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'picture', maxCount: 1 },
+      { name: 'audio', maxCount: 1 },
+    ]),
+  )
+  async createTrack(
+    @UploadedFiles()
+    files: {
+      picture?: Express.Multer.File[];
+      audio?: Express.Multer.File[];
+    },
+    @Body() dto: CreateTrackDto,
+  ) {
+    const { audio, picture } = files;
+
+    return this.trackService.createTrack(dto, audio[0], picture[0]);
   }
 
   @Get()

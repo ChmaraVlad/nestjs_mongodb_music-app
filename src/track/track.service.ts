@@ -7,21 +7,33 @@ import { Track, TrackDocument } from 'src/schemas/track.schema';
 
 import { CreateTrackDto } from './dto/CreateTrackDto';
 import { CreateCommentDto } from './dto/CreateCommentDto';
+import { FilesService, FilesType } from 'src/file/file.service';
 
 @Injectable()
 export class TrackService {
   constructor(
     @InjectModel(Track.name) private trackModel: Model<TrackDocument>,
     @InjectModel(Comment.name) private commentModel: Model<CommentDocument>,
+    private fileService: FilesService,
   ) {}
 
-  async createTrack(dto: CreateTrackDto): Promise<Track> {
+  async createTrack(dto: CreateTrackDto, audio, picture): Promise<Track> {
     try {
-      if (!dto) {
+      if (!dto || !audio || !picture) {
         throw new HttpException(`Dto is not defined`, HttpStatus.BAD_REQUEST);
       }
+      const audioPath = await this.fileService.createFile(
+        FilesType.AUDIO,
+        audio,
+      );
+      const picturePath = await this.fileService.createFile(
+        FilesType.PICTURE,
+        picture,
+      );
       const track = await this.trackModel.create({
         ...dto,
+        audio: audioPath,
+        picture: picturePath,
         listens: 0,
       });
       return track;
