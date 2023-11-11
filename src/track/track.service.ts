@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model, ObjectId } from 'mongoose';
 
@@ -6,6 +6,7 @@ import { Comment, CommentDocument } from 'src/schemas/comment.schema';
 import { Track, TrackDocument } from 'src/schemas/track.schema';
 
 import { CreateTrackDto } from './dto/CreateTrackDto';
+import { CreateCommentDto } from './dto/CreateCommentDto';
 
 @Injectable()
 export class TrackService {
@@ -15,27 +16,78 @@ export class TrackService {
   ) {}
 
   async createTrack(dto: CreateTrackDto): Promise<Track> {
-    const track = await this.trackModel.create({
-      ...dto,
-      listens: 0,
-    });
-    return track;
+    try {
+      if (!dto) {
+        throw new HttpException(`Dto is not defined`, HttpStatus.BAD_REQUEST);
+      }
+      const track = await this.trackModel.create({
+        ...dto,
+        listens: 0,
+      });
+      return track;
+    } catch (error) {
+      throw new HttpException(`${error}`, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async getOneTrack(_id: ObjectId): Promise<Track> {
-    const track = await this.trackModel.findById(_id);
-    return track;
+    try {
+      const track = (await this.trackModel.findById(_id)).populate('comments');
+
+      if (!track) {
+        throw new HttpException(`Track is not defined`, HttpStatus.BAD_REQUEST);
+      }
+      return track;
+    } catch (error) {
+      throw new HttpException(`${error}`, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async getAllTracks(): Promise<Track[]> {
-    const tracks = await this.trackModel.find();
-    return tracks;
+    try {
+      const tracks = await this.trackModel.find();
+      return tracks;
+    } catch (error) {
+      throw new HttpException(`${error}`, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async deleteOneTrack(_id: ObjectId): Promise<mongoose.Types.ObjectId> {
-    const track = await this.trackModel.findByIdAndDelete(_id);
-    return track._id;
+    try {
+      const track = await this.trackModel.findByIdAndDelete(_id);
+      if (!track) {
+        throw new HttpException(`Track is not defined`, HttpStatus.BAD_REQUEST);
+      }
+      return track._id;
+    } catch (error) {
+      throw new HttpException(`${error}`, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   deleteAllTracks() {}
+
+  async createComment(dto: CreateCommentDto, _id: ObjectId): Promise<Comment> {
+    try {
+      if (!dto) {
+        throw new HttpException(
+          `Data for comment is not defined`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      const comment = await this.commentModel.create({
+        ...dto,
+      });
+
+      const track = await this.trackModel.findById(_id);
+      if (!track) {
+        throw new HttpException(`Track is not defined`, HttpStatus.BAD_REQUEST);
+      }
+      track.comments.push(comment);
+      track.save();
+
+      return comment;
+    } catch (error) {
+      throw new HttpException(`${error}`, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 }

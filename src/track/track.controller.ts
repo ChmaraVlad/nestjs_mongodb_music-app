@@ -4,6 +4,7 @@ import { ObjectId } from 'mongoose';
 import { TrackService } from './track.service';
 
 import { CreateTrackDto } from './dto/CreateTrackDto';
+import { CreateCommentDto } from './dto/CreateCommentDto';
 
 @Controller('/tracks')
 export class TrackController {
@@ -30,5 +31,10 @@ export class TrackController {
   @Delete(':_id')
   async deleteAllTracks(@Param() _id: ObjectId) {
     return this.trackService.deleteOneTrack(_id);
+  }
+
+  @Post(':_id/comment')
+  async createComment(@Body() dto: CreateCommentDto, @Param() _id: ObjectId) {
+    return this.trackService.createComment(dto, _id);
   }
 }
