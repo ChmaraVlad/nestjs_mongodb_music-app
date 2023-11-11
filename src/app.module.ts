@@ -7,6 +7,11 @@ import { MongooseModule } from '@nestjs/mongoose';
 @Module({
   controllers: [],
   providers: [],
-  imports: [MongooseModule.forRoot('mongodb://localhost/nest'), TrackModule],
+  imports: [
+    MongooseModule.forRoot(
+      'mongodb+srv://admin:admin@music-platform.6hgafqa.mongodb.net/',
+    ),
+    TrackModule,
+  ],
 })
 export class AppModule {}
