@@ -63,4 +63,9 @@ export class TrackController {
   async createComment(@Body() dto: CreateCommentDto, @Param() _id: ObjectId) {
     return this.trackService.createComment(dto, _id);
   }
+
+  @Get(':_id/listen')
+  async listen(@Param() _id: ObjectId) {
+    return this.trackService.listen(_id);
+  }
 }

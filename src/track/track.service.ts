@@ -38,7 +38,7 @@ export class TrackService {
       });
       return track;
     } catch (error) {
-      throw new HttpException(`${error}`, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -99,7 +99,29 @@ export class TrackService {
 
       return comment;
     } catch (error) {
-      throw new HttpException(`${error}`, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async listen(_id: ObjectId): Promise<Comment> {
+    try {
+      if (!_id) {
+        throw new HttpException(
+          `Track ID is not defined`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const track = await this.trackModel.findById(_id);
+      if (!track) {
+        throw new HttpException(`Track is not defined`, HttpStatus.BAD_REQUEST);
+      }
+      track.listens += 1;
+      track.save();
+
+      return;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }
