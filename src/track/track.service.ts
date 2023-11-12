@@ -64,6 +64,17 @@ export class TrackService {
     }
   }
 
+  async search(query): Promise<Track[]> {
+    try {
+      const tracks = await this.trackModel.find({
+        name: { $regex: new RegExp(query, 'i') },
+      });
+      return tracks;
+    } catch (error) {
+      throw new HttpException(`${error}`, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   async deleteOneTrack(_id: ObjectId): Promise<mongoose.Types.ObjectId> {
     try {
       const track = await this.trackModel.findByIdAndDelete(_id);

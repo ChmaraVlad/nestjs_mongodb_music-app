@@ -50,6 +50,11 @@ export class TrackController {
     return this.trackService.getAllTracks(count, offset);
   }
 
+  @Get('search')
+  async search(@Query('query') query: string) {
+    return this.trackService.search(query);
+  }
+
   @Get(':_id')
   async getOneTrack(@Param() _id: ObjectId) {
     return this.trackService.getOneTrack(_id);
