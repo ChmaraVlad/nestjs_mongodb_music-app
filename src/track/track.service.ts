@@ -55,9 +55,9 @@ export class TrackService {
     }
   }
 
-  async getAllTracks(): Promise<Track[]> {
+  async getAllTracks(count = 10, offset = 0): Promise<Track[]> {
     try {
-      const tracks = await this.trackModel.find();
+      const tracks = await this.trackModel.find().skip(offset).limit(count);
       return tracks;
     } catch (error) {
       throw new HttpException(`${error}`, HttpStatus.INTERNAL_SERVER_ERROR);
